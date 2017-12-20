@@ -45,7 +45,6 @@ module.exports = function healthPotter(dispatch) {
 		let thiscooldown = event.cooldown
 
 		if(item == HEALTHPOT) { // has 10 seconds cooldown
-      console.log('potion started cd')
 			cooldown = true
 			setTimeout(() => {
 				cooldown = false
@@ -89,21 +88,15 @@ module.exports = function healthPotter(dispatch) {
 
   dispatch.hook('S_CREATURE_CHANGE_HP', 6, (event) => {
     percent = event.curHp / event.maxHp;
-    console.log('changed hp to ' + event.curHp);
-    console.log('PERCENT = ' + percent);
     if (enabled && !cooldown && event.target.equals(cid) && (percent <= PERCENT)) {
-      console.log('passed percent check');
       usePot();
     }
 
   })
 
   function usePot() {
-    console.log('attemping to use potion')
     if (!enabled) return;
-    console.log('checks - alive: ' + alive + ' incombat: ' + ' incontract: ' + incontract + ' in bg: ' + inbattleground);
     if (alive && inCombat && !onmount && !incontract && !inbattleground) {
-      console.log('using potion');
       dispatch.toServer('C_USE_ITEM', 1, {
         ownerId: cid,
         item: HEALTHPOT,
