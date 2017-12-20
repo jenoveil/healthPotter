@@ -1,7 +1,8 @@
 const HEALTHPOT = 6552;
+const Command = require('command');
 
 module.exports = function healthPotter(dispatch) {
-
+  const command = Command(dispatch);
   let cid = null,
   player = '',
   enabled = true,
