@@ -1,4 +1,5 @@
 const HEALTHPOT = 6552;
+const PERCENT = 0.25;
 const Command = require('command');
 
 module.exports = function healthPotter(dispatch) {
@@ -85,7 +86,7 @@ module.exports = function healthPotter(dispatch) {
 	dispatch.hook('S_CANCEL_CONTRACT', 1, event => { incontract = false })
 
   dispatch.hook('S_CREATURE_CHANGE_HP', 6, (event) => {
-    if (!cooldown && event.target.equals(cid) && (curHp/MaxHp <= 0.1))
+    if (!cooldown && event.target.equals(cid) && (event.curHp/event.MaxHp <= PERCENT))
       usePot();
   })
 
