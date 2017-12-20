@@ -1,5 +1,6 @@
 const HEALTHPOT = 6552;
 const PERCENT = 0.25;
+const HPPOTCOOLDOWN = 10000;
 const Command = require('command');
 
 module.exports = function healthPotter(dispatch) {
@@ -8,16 +9,16 @@ module.exports = function healthPotter(dispatch) {
   player = '',
   enabled = true,
   battleground,
-  onmount,
-  incontract,
-  inbattleground,
-  alive,
-  inCombat,
+  onmount = false,
+  incontract = false,
+  inbattleground = false,
+  alive = true,
+  inCombat = false,
   cooldown = false,
   location;
 
   command.add('hpPot', (arg) => {
-    switch (cmd) {
+    switch (arg) {
       case 'on':
         enabled = true;
         break;
@@ -44,10 +45,11 @@ module.exports = function healthPotter(dispatch) {
 		let thiscooldown = event.cooldown
 
 		if(item == HEALTHPOT) { // has 10 seconds cooldown
+      console.log('potion started cd')
 			cooldown = true
 			setTimeout(() => {
 				cooldown = false
-			}, thiscooldown*1000)
+			}, HPPOTCOOLDOWN)
 		}
 	})
 
@@ -86,13 +88,22 @@ module.exports = function healthPotter(dispatch) {
 	dispatch.hook('S_CANCEL_CONTRACT', 1, event => { incontract = false })
 
   dispatch.hook('S_CREATURE_CHANGE_HP', 6, (event) => {
-    if (!cooldown && event.target.equals(cid) && (event.curHp/event.MaxHp <= PERCENT))
+    percent = event.curHp / event.maxHp;
+    console.log('changed hp to ' + event.curHp);
+    console.log('PERCENT = ' + percent);
+    if (enabled && !cooldown && event.target.equals(cid) && (percent <= PERCENT)) {
+      console.log('passed percent check');
       usePot();
+    }
+
   })
 
   function usePot() {
+    console.log('attemping to use potion')
     if (!enabled) return;
-    if (alive && inCombat && !onMount && !incontract && inbattleground) {}
+    console.log('checks - alive: ' + alive + ' incombat: ' + ' incontract: ' + incontract + ' in bg: ' + inbattleground);
+    if (alive && inCombat && !onmount && !incontract && !inbattleground) {
+      console.log('using potion');
       dispatch.toServer('C_USE_ITEM', 1, {
         ownerId: cid,
         item: HEALTHPOT,
@@ -114,5 +125,7 @@ module.exports = function healthPotter(dispatch) {
         unk11: 1
       })
     }
+
+  }
 
 }
