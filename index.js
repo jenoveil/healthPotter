@@ -15,7 +15,10 @@ module.exports = function healthPotter(dispatch) {
   alive = true,
   inCombat = false,
   cooldown = false,
-  location;
+  location,
+  placeholder = null,
+  curHp = null,
+  maxHp = null;
 
   command.add('hpPot', (arg) => {
     switch (arg) {
@@ -41,14 +44,16 @@ module.exports = function healthPotter(dispatch) {
   dispatch.hook('C_PLAYER_LOCATION', 1, event =>{location = event})
 
   dispatch.hook('S_START_COOLTIME_ITEM', 1, event => {
-		let item = event.item
-		let thiscooldown = event.cooldown
 
-		if(item == HEALTHPOT) { // has 10 seconds cooldown
+		if(event.item == HEALTHPOT) { // has 10 seconds cooldown
 			cooldown = true
 			setTimeout(() => {
-				cooldown = false
-			}, HPPOTCOOLDOWN)
+				cooldown = false;
+        checkHp(); // check hp again when cooldown comes up
+			}, HPPOTCOOLDOWN);
+
+
+
 		}
 	})
 
@@ -74,6 +79,7 @@ module.exports = function healthPotter(dispatch) {
 			if(!alive) {
 				onmount = false
 				incontract = false
+        placeholder = null;
 			}
 		}
 	})
@@ -87,12 +93,23 @@ module.exports = function healthPotter(dispatch) {
 	dispatch.hook('S_CANCEL_CONTRACT', 1, event => { incontract = false })
 
   dispatch.hook('S_CREATURE_CHANGE_HP', 6, (event) => {
-    percent = event.curHp / event.maxHp;
-    if (enabled && !cooldown && event.target.equals(cid) && (percent <= PERCENT)) {
-      usePot();
+
+    if (event.target.equals(cid)) {
+      curHp = event.curHp;
+      maxHp = event.maxHp;
+      if (enabled) checkHp();
     }
 
   })
+
+  function checkHp() {
+
+      percent = curHp / maxHp;
+      if (!cooldown && percent <= PERCENT) {
+        usePot();
+      }
+
+  }
 
   function usePot() {
     if (!enabled) return;
